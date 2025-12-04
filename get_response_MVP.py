@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
 # Import client classes from local models module
-from models import VLLMClient, HuggingFaceClient
+from models import VLLMClient
 from config_utils import get_output_dir, get_data_path
 
 def handle_response(response: str) -> str:
@@ -27,8 +27,6 @@ def generate_response(client,
                      output_dir: str = None,
                      data_base_path: str = None,
                      max_tokens: int = 10240,
-                     skip_thinking: bool = False,
-                     thinking_mode: str = "auto",
                      save_interval: int = 100,
                      num_threads: int = 2):
     
@@ -125,22 +123,12 @@ def generate_response(client,
             print(f"Warning: Image not found at {image_path}")
 
         try:
-            if isinstance(client, HuggingFaceClient):
-                result = client.generate_response(
-                    prompt=cur_prompt,
-                    image_paths=image_paths if image_paths else None,
-                    max_tokens=max_tokens,
-                    thinking_mode=thinking_mode,
-                    skip_thinking=skip_thinking
-                )
-            else:  # VLLMClient
-                result = client.generate_response(
-                    prompt=cur_prompt,
-                    image_paths=image_paths if image_paths else None,
-                    model="model",
-                    max_tokens=max_tokens,
-                    skip_thinking=skip_thinking
-                )
+            result = client.generate_response(
+                prompt=cur_prompt,
+                image_paths=image_paths if image_paths else None,
+                model="model",
+                max_tokens=max_tokens
+            )
 
             # Build response item
             item = {
@@ -270,20 +258,14 @@ def generate_response(client,
 
 def main():
     parser = argparse.ArgumentParser(description="Generate responses for MMVP Benchmark using vLLM")
-    parser.add_argument("--vllm-url", default="http://localhost:8001",
+    parser.add_argument("--vllm-url", default="http://localhost:8122",
                        help="vLLM server URL")
     parser.add_argument("--model_name", default="model",
                        help="Prefix for output JSON filenames")
-    parser.add_argument("--model-path", default="/data/zhengyue_zhao/workspace/nanxi/Models/R-4B",
-                       help="Path to the R-4B model (used when model_name is R-4B)")
     parser.add_argument("--data-base-path", default=None,
                        help="Base path for MMVP data (default: from .env DATA_BASE_ROOT_PATH/MMVP)")
     parser.add_argument("--max-tokens", type=int, default=10240,
                        help="Maximum tokens to generate")
-    parser.add_argument("--skip-thinking", action="store_true",
-                       help="Enable skip thinking mode - prefill <think> </think> tokens in assistant response")
-    parser.add_argument("--thinking-mode", choices=["auto", "long", "short"], default="auto",
-                       help="Thinking mode for R-4B model: auto (default), long, or short")
     parser.add_argument("--force-reprocess", action="store_true",
                        help="Force reprocessing even if output files already exist")
     parser.add_argument("--save-interval", type=int, default=100,
@@ -296,34 +278,21 @@ def main():
     # Determine model name with prefix
     model_name = args.model_name
     
-    # Create appropriate client based on model name
-    if model_name == "R-4B":
-        # Use HuggingFace client for R-4B model
-        print(f"Using HuggingFace client for R-4B model at {args.model_path}")
-        try:
-            client = HuggingFaceClient(args.model_path)
-            print("Successfully initialized HuggingFace client for R-4B")
-        except Exception as e:
-            print(f"Error initializing HuggingFace client: {e}")
-            sys.exit(1)
-    else:
-        # Use vLLM client for other models
-        print(f"Using vLLM client for model: {model_name}")
-        client = VLLMClient(args.vllm_url)
-        
-        # Test vLLM connection
-        try:
-            models = client.get_models()
-            print(f"Connected to vLLM server. Available models: {[m['id'] for m in models]}")
-        except Exception as e:
-            print(f"Error connecting to vLLM server: {e}")
-            sys.exit(1)
+    # Create vLLM client
+    print(f"Using vLLM client for model: {model_name}")
+    client = VLLMClient(args.vllm_url)
+    
+    # Test vLLM connection
+    try:
+        models = client.get_models()
+        print(f"Connected to vLLM server. Available models: {[m['id'] for m in models]}")
+    except Exception as e:
+        print(f"Error connecting to vLLM server: {e}")
+        sys.exit(1)
     
     # Show configuration
     print(f"Configuration:")
     print(f"  Model name: {model_name}")
-    print(f"  Skip thinking mode: {args.skip_thinking}")
-    print(f"  Thinking mode: {args.thinking_mode}")
     print(f"  Force reprocess: {args.force_reprocess}")
     print(f"  Max tokens: {args.max_tokens}")
     print(f"  Save interval: {args.save_interval}")
@@ -336,8 +305,6 @@ def main():
         output_dir=os.path.join(get_output_dir(), "MMVP"),
         data_base_path=args.data_base_path,
         max_tokens=args.max_tokens,
-        skip_thinking=args.skip_thinking,
-        thinking_mode=args.thinking_mode,
         save_interval=args.save_interval,
         num_threads=args.num_threads
     )

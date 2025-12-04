@@ -43,10 +43,11 @@ class VLLMClient:
                          image_paths: Optional[Union[str, List[str]]],
                          model: Optional[str] = None,
                          max_tokens: int = 10240,
-                         temperature: float = 0.9,
-                         top_p: float = 0.9,
-                         top_k: Optional[int] = None,
-                         repetition_penalty: Optional[float] = 1.2,
+                         temperature: float = 1.0,
+                         top_p: float = 0.95,
+                         top_k: Optional[int] = 20,
+                         repetition_penalty: Optional[float] = 1.0,
+                         presence_penalty: Optional[float] = 0.0,
                          skip_thinking: bool = False,
                          assistant_content: Optional[str] = None,
                          **kwargs) -> Dict[str, Any]:
@@ -148,6 +149,8 @@ class VLLMClient:
             request_body["extra_body"]["top_k"] = top_k
         if repetition_penalty is not None:
             request_body["extra_body"]["repetition_penalty"] = repetition_penalty
+        if presence_penalty is not None:
+            request_body["presence_penalty"] = presence_penalty
         
         # Add continue_final_message if assistant_content is provided or skip_thinking for non-Mimo models
         

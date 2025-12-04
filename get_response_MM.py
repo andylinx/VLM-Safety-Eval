@@ -14,13 +14,11 @@ from typing import Optional, Dict, Any, List
 import time
 from openai import OpenAI
 from PIL import Image
-import torch
-from transformers import AutoModel, AutoProcessor
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
 # Import client classes from local models module
-from models import VLLMClient, HuggingFaceClient
+from models import VLLMClient
 from config_utils import get_output_dir, get_data_path
 
 def handle_response(response: str) -> str:
@@ -30,31 +28,20 @@ def handle_response(response: str) -> str:
     return response.strip()
 
 def process_single_variant(variant_info: Dict[str, Any], client, model_name: str, max_tokens: int, 
-                          skip_thinking: bool, thinking_mode: str, gen_kwargs: Dict) -> Dict[str, Any]:
+                          gen_kwargs: Dict) -> Dict[str, Any]:
     """Process a single image variant (SD, TYPO, or SD_TYPO)."""
     try:
         image_path = variant_info["image_path"]
         prompt = variant_info["prompt"]
         variant_key = variant_info["variant_key"]
         
-        # Use different parameters based on client type
-        if isinstance(client, HuggingFaceClient):
-            result = client.generate_response(
-                prompt=prompt,
-                image_paths=image_path,
-                max_tokens=max_tokens,
-                thinking_mode=thinking_mode,
-                skip_thinking=skip_thinking
-            )
-        else:  # VLLMClient
-            result = client.generate_response(
-                prompt=prompt,
-                image_paths=image_path,
-                model=model_name,
-                max_tokens=max_tokens,
-                skip_thinking=skip_thinking,
-                **gen_kwargs
-            )
+        result = client.generate_response(
+            prompt=prompt,
+            image_paths=image_path,
+            model=model_name,
+            max_tokens=max_tokens,
+            **gen_kwargs
+        )
             
         # print(result)
         # print("==="*8)
@@ -79,8 +66,6 @@ def generate_response(scenario: str,
                      output_dir: str,
                      data_base_path: str = None,
                      max_tokens: int = 10240,
-                     skip_thinking: bool = False,
-                     thinking_mode: str = "auto",
                      max_workers: int = 4,
                      sample_size: Optional[int] = None,
                      **gen_kwargs):
@@ -175,8 +160,6 @@ def generate_response(scenario: str,
                 client,
                 model_name,
                 max_tokens,
-                skip_thinking,
-                thinking_mode,
                 gen_kwargs
             ): (task, idx) 
             for idx, task in enumerate(tasks)
@@ -261,31 +244,25 @@ def check_existing_output(output_path: str) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="Generate responses for MM-SafetyBench using vLLM")
-    parser.add_argument("--vllm-url", default="http://localhost:8000",
+    parser.add_argument("--vllm-url", default="http://localhost:8122",
                        help="vLLM server URL")
     parser.add_argument("--model_name", default="model",
                        help="Prefix for output JSON filenames")
-    parser.add_argument("--model-path", default="/data/zhengyue_zhao/workspace/nanxi/Models/R-4B",
-                       help="Path to the R-4B model (used when model_name is R-4B)")
     parser.add_argument("--data-base-path", default=None,
                        help="Base path for MM-SafetyBench data (default: from .env DATA_BASE_ROOT_PATH/MM-SafetyBench)")
     parser.add_argument("--max-tokens", type=int, default=10240,
                        help="Maximum tokens to generate")
-    parser.add_argument("--skip-thinking", action="store_true",
-                       help="Enable skip thinking mode - prefill <think> </think> tokens in assistant response")
-    parser.add_argument("--thinking-mode", choices=["auto", "long", "short"], default="auto",
-                       help="Thinking mode for R-4B model: auto (default), long, or short")
     parser.add_argument("--force-reprocess", action="store_true",
                        help="Force reprocessing of scenarios even if output files already exist")
-    parser.add_argument("--max-workers", type=int, default=4,
-                       help="Number of parallel workers for processing requests (default: 4)")
+    parser.add_argument("--max-workers", type=int, default=2,
+                       help="Number of parallel workers for processing requests (default: 2)")
     parser.add_argument("--sample-size", type=int, default=None,
                        help="Number of questions to sample from each scenario for testing (default: 50, process 50 questions)")
     
     # Add generation parameters
-    parser.add_argument("--temperature", type=float, default=0.9, help="Sampling temperature")
+    parser.add_argument("--temperature", type=float, default=1.0, help="Sampling temperature")
     parser.add_argument("--top-p", dest="top_p", type=float, default=0.95, help="Nucleus sampling top-p")
-    parser.add_argument("--top-k", dest="top_k", type=int, default=40, help="Top-k sampling (vLLM extension)")
+    parser.add_argument("--top-k", dest="top_k", type=int, default=20, help="Top-k sampling (vLLM extension)")
     parser.add_argument("--repetition-penalty", dest="repetition_penalty", type=float, default=1.0, help="Repetition penalty (vLLM extension)")
     
     args = parser.parse_args()
@@ -296,35 +273,22 @@ def main():
     # Set output directory based on model name
     output_dir = os.path.join(get_output_dir(), "MM_Safety", f"MLLM_Result_{model_name}")
     
-    # Create appropriate client based on model name
-    if model_name == "R-4B":
-        # Use HuggingFace client for R-4B model
-        print(f"Using HuggingFace client for R-4B model at {args.model_path}")
-        try:
-            client = HuggingFaceClient(args.model_path)
-            print("Successfully initialized HuggingFace client for R-4B")
-        except Exception as e:
-            print(f"Error initializing HuggingFace client: {e}")
-            sys.exit(1)
-    else:
-        # Use vLLM client for other models
-        print(f"Using vLLM client for model: {model_name}")
-        client = VLLMClient(args.vllm_url)
-        
-        # Test vLLM connection
-        try:
-            models = client.get_models()
-            print(f"Connected to vLLM server. Available models: {[m['id'] for m in models]}")
-        except Exception as e:
-            print(f"Error connecting to vLLM server: {e}")
-            sys.exit(1)
+    # Create vLLM client
+    print(f"Using vLLM client for model: {model_name}")
+    client = VLLMClient(args.vllm_url)
+    
+    # Test vLLM connection
+    try:
+        models = client.get_models()
+        print(f"Connected to vLLM server. Available models: {[m['id'] for m in models]}")
+    except Exception as e:
+        print(f"Error connecting to vLLM server: {e}")
+        sys.exit(1)
     
     # Show configuration
     print(f"Configuration:")
     print(f"  Model name: {model_name}")
     print(f"  Output directory: {output_dir}")
-    print(f"  Skip thinking mode: {args.skip_thinking}")
-    print(f"  Thinking mode: {args.thinking_mode}")
     print(f"  Force reprocess: {args.force_reprocess}")
     print(f"  Max tokens: {args.max_tokens}")
     print(f"  Parallel workers: {args.max_workers}")
@@ -386,8 +350,6 @@ def main():
                 output_dir=output_dir,
                 data_base_path=args.data_base_path,
                 max_tokens=args.max_tokens,
-                skip_thinking=args.skip_thinking,
-                thinking_mode=args.thinking_mode,
                 max_workers=args.max_workers,
                 sample_size=args.sample_size,
                 **gen_kwargs

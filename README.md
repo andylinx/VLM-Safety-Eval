@@ -46,7 +46,25 @@ vllm serve /path/to/your/model \
     --trust-remote-code
 ```
 
-### 3. Generate Responses
+### 3. Model-Specific Inference Parameters
+
+> ⚠️ **Important**: Different models have different preferences for inference hyperparameters. Recent models are especially sensitive to these settings. Using incorrect parameters may significantly affect output quality.
+
+| Model | temperature | top_p | top_k | repetition_penalty | presence_penalty |
+|-------|-------------|-------|-------|-------------------|------------------|
+| **Qwen3VL-32B-Thinking** | 1.0 | 0.95 | 20 | 1.0 | 0.0 |
+
+
+Example for Qwen3VL-32B-Thinking:
+```bash
+export top_p=0.95
+export top_k=20
+export repetition_penalty=1.0
+export presence_penalty=0.0
+export temperature=1.0
+```
+
+### 4. Generate Responses
 
 ```bash
 # MM-SafetyBench
@@ -72,7 +90,7 @@ Common arguments:
 - `--skip-thinking`: Skip reasoning tokens for thinking models
 - `--num-threads`: Parallel processing threads
 
-### 4. Judge Responses
+### 5. Judge Responses
 
 ```bash
 # MM-SafetyBench (uses Llama Guard 4)
@@ -94,7 +112,3 @@ Results are saved to `./result/<benchmark>/` with:
 - Response JSON files: `{model_name}_{benchmark}_result.json`
 - Judged files: `*_judged.json`
 - Summary: `judging_summary.json` with ASR/accuracy metrics
-
-## License
-
-See LICENSE file.

@@ -142,7 +142,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate JSONL file and categorize results.")
     
-    parser.add_argument('--input_path', type=str, required=True, help="Path to the input JSONL file.")
+    parser.add_argument('input_path', type=str, help="Path to the input JSONL file.")
     parser.add_argument('--model', type=str, help="Model name.")
     parser.add_argument('--output_path', type=str, default="../results/MIS/", help="Path to save the output evaluation results.")
     

@@ -180,8 +180,6 @@ def process_mathvision_responses(df: pd.DataFrame,
                 # Store results
                 df.loc[idx, 'model_response'] = result['response']
                 df.loc[idx, 'model_used'] = result['model']
-                print(result['response'])
-                print("-----"*10)
                 
                 # Store token usage if available
                 usage = result.get('usage', {})
@@ -218,7 +216,7 @@ def main():
                        help="Dataset split to use")
     parser.add_argument("--image-dir", default=None,
                        help="Directory to save images (default: from .env DATA_BASE_ROOT_PATH/mathvision_images)")
-    parser.add_argument("--vllm-url", default="http://localhost:8100",
+    parser.add_argument("--vllm-url", default="http://localhost:8122",
                        help="vLLM server URL")
     parser.add_argument("--model_name", default=None,
                        help="Model name (optional, uses first available)")
@@ -230,9 +228,9 @@ def main():
                        help="Retry rows that previously had errors")
 
     # Add generation parameters
-    parser.add_argument("--temperature", type=float, default=0.9, help="Sampling temperature")
+    parser.add_argument("--temperature", type=float, default=1.0, help="Sampling temperature")
     parser.add_argument("--top-p", dest="top_p", type=float, default=0.95, help="Nucleus sampling top-p")
-    parser.add_argument("--top-k", dest="top_k", type=int, default=40, help="Top-k sampling (vLLM extension)")
+    parser.add_argument("--top-k", dest="top_k", type=int, default=20, help="Top-k sampling (vLLM extension)")
     parser.add_argument("--repetition-penalty", dest="repetition_penalty", type=float, default=1.0, help="Repetition penalty (vLLM extension)")
     
     args = parser.parse_args()
@@ -273,7 +271,9 @@ def main():
         repetition_penalty=args.repetition_penalty,
     ).items() if v is not None}
 
-    output_json = f"../results/MathVision/math_{args.model_name}.json"
+    output_json = f"../result/MathVision/math_{args.model_name}.json"
+    if not os.path.exists(os.path.dirname(output_json)):
+        os.makedirs(os.path.dirname(output_json), exist_ok=True)
     # Process responses
     try:
         result_df = process_mathvision_responses(
