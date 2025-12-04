@@ -10,7 +10,7 @@ A framework for evaluating Vision-Language Models (VLMs) on **safety**, **halluc
 | 🛡️ Safety | MIS | `get_response_MIS.py` | `judge_MIS.py` |
 | 🔍 Hallucination | HallusionBench | `get_response_Hallucination.py` | `judge_Hallucination.py` |
 | 🔍 Hallucination | MMVP | `get_response_MVP.py` | `judge_MVP.py` |
-| ✅ Benign | MMLU-PRO | `get_response_MMMU_Pro.py` | `judge_MMMU_Pro.py` |
+| ✅ Benign | MMMU-PRO | `get_response_MMMU_Pro.py` | `judge_MMMU_Pro.py` |
 | ✅ Benign | MathVision | `get_response_MathVision.py` | `judge_mathvision.py` |
 
 ## Quick Start
