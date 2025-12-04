@@ -45,6 +45,7 @@ env/
 .ipynb_checkpoints
 
 # Results and logs
+result/
 results/*.json
 results/*.csv
 *.log
