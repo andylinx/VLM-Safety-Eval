@@ -29,10 +29,6 @@ bash unzip_folders.sh
 
 ### 2. Setup Environment
 
-```bash
-pip install -r requirements.txt
-```
-
 Create a `.env` file with the following configuration:
 
 ```properties
