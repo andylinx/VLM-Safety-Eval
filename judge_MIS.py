@@ -104,7 +104,8 @@ def main(args):
         print(f"Evaluating {response_file}...")
         eval_result = evaluate_function(args, data)
         print("Here")
-        output_path = os.path.join(args.output_path, f"MIS_{args.model}_hard.json")
+        input_filename = Path(response_file).stem
+        output_path = os.path.join(args.output_path, f"{input_filename}_judged.json")
 
         with open(output_path, 'a') as f:
             for idx,i in tqdm(enumerate(eval_result), desc="Processing evaluations"):
@@ -144,7 +145,7 @@ if __name__ == "__main__":
     
     parser.add_argument('input_path', type=str, help="Path to the input JSONL file.")
     parser.add_argument('--model', type=str, help="Model name.")
-    parser.add_argument('--output_path', type=str, default="../results/MIS/", help="Path to save the output evaluation results.")
+    parser.add_argument('--output_path', type=str, default="./result/MIS/", help="Path to save the output evaluation results.")
     
     args = parser.parse_args()
 

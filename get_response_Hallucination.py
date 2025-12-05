@@ -260,7 +260,7 @@ def generate_response(client,
 
 def main():
     parser = argparse.ArgumentParser(description="Generate responses for HallusionBench using vLLM")
-    parser.add_argument("--vllm-url", default="http://localhost:8001",
+    parser.add_argument("--vllm-url", default="http://localhost:8122",
                        help="vLLM server URL")
     parser.add_argument("--model_name", default="model",
                        help="Prefix for output JSON filenames")
@@ -276,15 +276,15 @@ def main():
                        help="Number of threads for concurrent processing (default: 1)")
     
     # Generation parameters
-    parser.add_argument("--temperature", type=float, default=0.7,
-                       help="Sampling temperature (default: 0.7)")
+    parser.add_argument("--temperature", type=float, default=1.0,
+                       help="Sampling temperature (default: 1.0)")
     parser.add_argument("--top-p", type=float, default=0.95,
                        help="Nucleus sampling top-p (default: 0.95)")
-    parser.add_argument("--top-k", type=int, default=40,
-                       help="Top-k sampling (default: 40)")
-    parser.add_argument("--repetition-penalty", type=float, default=1.2,
-                       help="Repetition penalty (default: 1.2)")
-    
+    parser.add_argument("--top-k", type=int, default=20,
+                       help="Top-k sampling (default: 20)")
+    parser.add_argument("--repetition-penalty", type=float, default=1.0,
+                       help="Repetition penalty (default: 1.0)")
+
     args = parser.parse_args()
     
     # Determine model name with prefix

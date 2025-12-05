@@ -31,22 +31,22 @@ def generate_response(client,
     if output_dir is None:
         output_dir = get_output_dir()
     if data_path is None:
-        data_path = os.path.join(get_data_base_root_path(), "MMLU_PRO/standard (4 options)/dataset.json")
+        data_path = os.path.join(get_data_base_root_path(), "MMMU_PRO/standard (4 options)/dataset.json")
     if image_base_path is None:
-        image_base_path = os.path.join(get_data_base_root_path(), "MMLU_PRO/standard (4 options)")
+        image_base_path = os.path.join(get_data_base_root_path(), "MMMU_PRO/standard (4 options)/images")
     
-    # Load MMLU_PRO dataset from JSON
+    # Load MMMU_PRO dataset from JSON
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Dataset not found at {data_path}")
     
-    print(f"Loading MMLU_PRO dataset from {data_path}")
+    print(f"Loading MMMU_PRO dataset from {data_path}")
     with open(data_path, "r") as f:
         dataset = json.load(f)
     print(f"Loaded {len(dataset)} questions")
     
     # Prepare output paths
-    output_path = os.path.join(output_dir, f"{model_name}_MMLU_PRO_result.json")
-    temp_output_path = os.path.join(output_dir, f"{model_name}_MMLU_PRO_result_temp.json")
+    output_path = os.path.join(output_dir, f"{model_name}_MMMU_PRO_result.json")
+    temp_output_path = os.path.join(output_dir, f"{model_name}_MMMU_PRO_result_temp.json")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
     # Check if there's existing progress to resume from
@@ -281,15 +281,15 @@ def generate_response(client,
     }
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate responses for MMLU_PRO Benchmark using vLLM")
-    parser.add_argument("--vllm-url", default="http://localhost:8000",
+    parser = argparse.ArgumentParser(description="Generate responses for MMMU_PRO Benchmark using vLLM")
+    parser.add_argument("--vllm-url", default="http://localhost:8122",
                        help="vLLM server URL")
     parser.add_argument("--model_name", default="model",
                        help="Prefix for output JSON filenames")
     parser.add_argument("--data-path", default=None,
-                       help="Path to MMLU_PRO dataset JSON file (default: from .env DATA_BASE_ROOT_PATH/MMLU_PRO/standard (4 options)/dataset.json)")
+                       help="Path to MMMU_PRO dataset JSON file (default: from .env DATA_BASE_ROOT_PATH/MMMU_PRO/standard (4 options)/dataset.json)")
     parser.add_argument("--image-base-path", default=None,
-                       help="Base path for MMLU_PRO images (default: from .env DATA_BASE_ROOT_PATH/MMLU_PRO/standard (4 options)/images)")
+                       help="Base path for MMMU_PRO images (default: from .env DATA_BASE_ROOT_PATH/MMMU_PRO/standard (4 options)/images)")
     parser.add_argument("--max-tokens", type=int, default=10240,
                        help="Maximum tokens to generate")
     parser.add_argument("--force-reprocess", action="store_true",
@@ -330,7 +330,7 @@ def main():
     result = generate_response(
         client=client,
         model_name=model_name,
-        output_dir=os.path.join(get_output_dir(), "MMLU_PRO"),
+        output_dir=os.path.join(get_output_dir(), "MMMU_PRO"),
         data_path=args.data_path,
         image_base_path=args.image_base_path,
         max_tokens=args.max_tokens,

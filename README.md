@@ -15,7 +15,19 @@ A framework for evaluating Vision-Language Models (VLMs) on **safety**, **halluc
 
 ## Quick Start
 
-### 1. Setup Environment
+### 1. Download Datasets
+
+You can download the collection of datasets from Hugging Face:
+
+```bash
+# Download from andyc03/VLM-Eval
+huggingface-cli download andyc03/VLM-Eval --local-dir ./data
+
+# Prepare data by unzipping folders
+bash unzip_folders.sh
+```
+
+### 2. Setup Environment
 
 ```bash
 pip install -r requirements.txt
@@ -35,7 +47,7 @@ DATA_BASE_ROOT_PATH=/path/to/your/Dataset
 OUTPUT_DIR=./result
 ```
 
-### 2. Start vLLM Server
+### 3. Start vLLM Server
 
 ```bash
 vllm serve /path/to/your/model \
@@ -46,9 +58,9 @@ vllm serve /path/to/your/model \
     --trust-remote-code
 ```
 
-### 3. Model-Specific Inference Parameters
+### 4. Model-Specific Inference Parameters
 
-> ⚠️ **Important**: Different models have different preferences for inference hyperparameters. Recent models are especially sensitive to these settings. Using incorrect parameters may significantly affect output quality.
+> ⚠️ **Important**: Different models have different preferences for inference hyperparameters. Reasoning models are more sensitive to these settings. Using incorrect parameters may significantly affect output quality.
 
 | Model | temperature | top_p | top_k | repetition_penalty | presence_penalty |
 |-------|-------------|-------|-------|-------------------|------------------|
@@ -64,7 +76,7 @@ export presence_penalty=0.0
 export temperature=1.0
 ```
 
-### 4. Generate Responses
+### 5. Generate Responses
 
 ```bash
 # MM-SafetyBench
@@ -90,7 +102,7 @@ Common arguments:
 - `--skip-thinking`: Skip reasoning tokens for thinking models
 - `--num-threads`: Parallel processing threads
 
-### 5. Judge Responses
+### 6. Judge Responses
 
 ```bash
 # MM-SafetyBench (uses Llama Guard 4)
