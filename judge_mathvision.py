@@ -138,33 +138,19 @@ if __name__ == '__main__':
     import argparse
     
     parser = argparse.ArgumentParser(description='Judge MathVision responses from JSON files')
-    parser.add_argument('--file', type=str, help='Specific JSON file to process')
-    parser.add_argument('--dir', type=str, default='./', help='Directory to search for JSON files (default: current directory)')
+    parser.add_argument('input', type=str, help='Specific JSON file to process')
     parser.add_argument('--regen', action='store_true', help='Regenerate model answers even if they exist')
     
     args = parser.parse_args()
     
-    if args.file:
-        # Process specific file
-        if os.path.exists(args.file) and args.file.endswith('.json'):
-            try:
-                print(f"Processing {args.file}...")
-                evaluate(args.file, args.regen)
-                math_level_subject_acc(args.file)
-            except Exception as e:
-                print(f"Error processing {args.file}: {e}")
-        else:
-            print(f"File {args.file} not found or not a JSON file")
+
+    if os.path.exists(args.input) and args.input.endswith('.json'):
+        try:
+            print(f"Processing {args.input}...")
+            evaluate(args.input, args.regen)
+            math_level_subject_acc(args.input)
+        except Exception as e:
+            print(f"Error processing {args.input}: {e}")
     else:
-        # Look for JSON files in directory and subdirectories
-        for root, dirs, files in os.walk(args.dir):
-            for file in files:
-                if file.endswith('.json') and 'result' not in file.lower():
-                    file_path = os.path.join(root, file)
-                    try:
-                        print(f"Processing {file_path}...")
-                        evaluate(file_path, args.regen)
-                        math_level_subject_acc(file_path)
-                    except Exception as e:
-                        print(f"Error processing {file_path}: {e}")
-                        continue
+        print(f"File {args.input} not found or not a JSON file")
+    

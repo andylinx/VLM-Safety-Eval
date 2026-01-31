@@ -233,7 +233,7 @@ def generate_response(client,
 
 def main():
     parser = argparse.ArgumentParser(description="Generate responses for MiS using vLLM")
-    parser.add_argument("--vllm-url", default="http://localhost:8122",
+    parser.add_argument("--vllm-url", default="http://localhost:8001",
                        help="vLLM server URL")
     parser.add_argument("--model_name", default="model",
                        help="Prefix for output JSON filenames")

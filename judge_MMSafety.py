@@ -103,7 +103,7 @@ def judge_json_file(input_json: str, output_json: str, processor, model, torch_d
 	return total_unsafe, total_processed
 
 
-def judge_mmsafetybench_directory(input_dir: str, output_dir: str, processor, model, torch_device, args):
+def judge_mmsafetybench_directory(input_dir: str, output_dir: str, processor, model, torch_device):
 	"""Judge all JSON files in MM-SafetyBench directory using the 13 official scenarios."""
 	if not os.path.exists(input_dir):
 		print(f"[error] Directory not found: {input_dir}", file=sys.stderr)
@@ -126,31 +126,35 @@ def judge_mmsafetybench_directory(input_dir: str, output_dir: str, processor, mo
 		"13-Gov_Decision"
 	]
 	
-	# Find expected JSON files
-	expected_files = [f"{scenario}_{args.model}_responses.json" for scenario in scenarios]
+	# Search for JSON files by scenario/category prefix
+	all_files = os.listdir(input_dir)
 	found_files = []
-	missing_files = []
+	found_scenarios = []
+	missing_scenarios = []
 	
-	for expected_file in expected_files:
-		file_path = os.path.join(input_dir, expected_file)
-		if os.path.exists(file_path):
-			found_files.append(expected_file)
+	for scenario in scenarios:
+		# Find any JSON file that starts with this scenario
+		matching_files = [f for f in all_files if f.startswith(scenario) and f.endswith('.json')]
+		if matching_files:
+			# Use the first matching file for this scenario
+			found_files.append(matching_files[0])
+			found_scenarios.append(scenario)
 		else:
-			missing_files.append(expected_file)
+			missing_scenarios.append(scenario)
 	
 	if not found_files:
 		print(f"[error] No MM-SafetyBench response files found in {input_dir}", file=sys.stderr)
-		print(f"Expected files like: {expected_files[0]}, {expected_files[1]}, etc.", file=sys.stderr)
+		print(f"Expected files starting with scenario names like: {scenarios[0]}, {scenarios[1]}, etc.", file=sys.stderr)
 		sys.exit(1)
 	
-	print(f"Found {len(found_files)}/{len(expected_files)} MM-SafetyBench scenario files:")
+	print(f"Found {len(found_files)}/{len(scenarios)} MM-SafetyBench scenario files:")
 	for f in found_files:
 		print(f"  ✓ {f}")
 	
-	if missing_files:
-		print(f"Missing {len(missing_files)} scenario files:")
-		for f in missing_files:
-			print(f"  ✗ {f}")
+	if missing_scenarios:
+		print(f"Missing {len(missing_scenarios)} scenarios:")
+		for s in missing_scenarios:
+			print(f"  ✗ {s}")
 	print()
 	
 	total_unsafe = 0
@@ -186,7 +190,7 @@ def judge_mmsafetybench_directory(input_dir: str, output_dir: str, processor, mo
 	summary_data = {
 		"dataset": "MM-SafetyBench",
 		"scenarios_processed": len(found_files),
-		"scenarios_missing": missing_files,
+		"scenarios_missing": missing_scenarios,
 		"overall": {
 			"total_unsafe": total_unsafe,
 			"total_processed": total_processed,
@@ -205,11 +209,7 @@ def main():
 	parser = argparse.ArgumentParser(description="Evaluate ASR with Llama Guard 4 on MM-SafetyBench dataset")
 	
 	# Input path
-	parser.add_argument("--input", required=True,
-	                   help="Input directory containing MM-SafetyBench response JSON files")
- 
-	parser.add_argument("--model", default="Mimo",
-					    help="Model name used in MM-SafetyBench filenames (default: Mimo)")
+	parser.add_argument('input', type=str, help='Specific JSON file to process')
 	
 	parser.add_argument("--output", default=None, 
 	                   help="Path to save output directory (default: input_dir + '_judged')")
@@ -236,7 +236,7 @@ def main():
 
 	# Process MM-SafetyBench directory
 	unsafe_count, processed, summary_results = judge_mmsafetybench_directory(
-		input_path, output_path, processor, model, torch_device, args
+		input_path, output_path, processor, model, torch_device
 	)
 	
 	# Summary

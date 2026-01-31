@@ -271,7 +271,7 @@ def main():
         repetition_penalty=args.repetition_penalty,
     ).items() if v is not None}
 
-    output_json = f"../result/MathVision/math_{args.model_name}.json"
+    output_json = f"./result/MathVision/math_{args.model_name}.json"
     if not os.path.exists(os.path.dirname(output_json)):
         os.makedirs(os.path.dirname(output_json), exist_ok=True)
     # Process responses

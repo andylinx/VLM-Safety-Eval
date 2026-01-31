@@ -274,21 +274,21 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description='Evaluate MMMU Pro multiple choice responses')
-    parser.add_argument('--file', type=str, help='Specific JSON file to process')
+    parser.add_argument('input', type=str, help='Specific JSON file to process')
     parser.add_argument('--dir', type=str, default='./output', help='Directory to search for JSON files')
     parser.add_argument('--vllm_url', type=str, default='http://localhost:8005', 
                         help='Base URL for vLLM server')
     
     args = parser.parse_args()
     
-    if args.file:
-        if os.path.exists(args.file) and args.file.endswith('.json'):
+    if args.input:
+        if os.path.exists(args.input) and args.input.endswith('.json'):
             try:
-                accuracy, correct, total = evaluate_file(args.file, args.vllm_url)
-                print(f"{os.path.basename(args.file)}: {correct}/{total} = {accuracy:.2f}%")
+                accuracy, correct, total = evaluate_file(args.input, args.vllm_url)
+                print(f"{os.path.basename(args.input)}: {correct}/{total} = {accuracy:.2f}%")
             except Exception as e:
-                print(f"Error processing {args.file}: {e}")
+                print(f"Error processing {args.input}: {e}")
         else:
-            print(f"File {args.file} not found or not a JSON file")
+            print(f"File {args.input} not found or not a JSON file")
     else:
         process_directory(args.dir, args.vllm_url)
