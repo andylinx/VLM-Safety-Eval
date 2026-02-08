@@ -7,7 +7,7 @@ import os
 import time
 import sys
 import argparse
-from hallu_utils import *
+from utils.hallu_utils import *
 
 
 ### to evaluate your method, implement and run generate_answer function!

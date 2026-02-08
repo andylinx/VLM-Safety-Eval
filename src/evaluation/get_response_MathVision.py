@@ -18,7 +18,7 @@ from PIL import Image
 
 # Import client classes from local models module
 from models import VLLMClient
-from config_utils import get_output_dir, get_data_base_root_path
+from utils.config_utils import get_output_dir, get_data_base_root_path
 
 def save_image_from_dataset(image_obj, save_path: str) -> bool:
     """Save PIL Image object to file."""

@@ -61,3 +61,6 @@ judge.log
 *.tmp
 *.temp
 .cache/
+
+# Data folder
+data/

@@ -1,5 +1,3 @@
-
-
 import os
 import json
 from tqdm import tqdm
@@ -14,7 +12,7 @@ import threading
 
 # Import client classes from local models module
 from models import VLLMClient
-from config_utils import get_output_dir, get_data_path
+from utils.config_utils import get_output_dir, get_data_path
 
 def handle_response(response: str) -> str:
     """Process and clean up the response."""

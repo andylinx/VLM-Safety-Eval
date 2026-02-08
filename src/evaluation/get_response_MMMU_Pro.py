@@ -10,7 +10,7 @@ import threading
 
 # Import client classes from local models module
 from models import VLLMClient
-from config_utils import get_output_dir, get_data_path, get_data_base_root_path
+from utils.config_utils import get_output_dir, get_data_path, get_data_base_root_path
 
 def handle_response(response: str) -> str:
     """Process and clean up the response."""

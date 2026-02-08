@@ -434,5 +434,3 @@ def find_math_answer(s: str) -> str:
             
 if __name__ == '__main__':
     pass
-    # process_MATH(path='/home/SENSETIME/wangke3/Desktop/main/data/MATH/train', type = 'MATH')
-    # process_GSM8K(path='/home/SENSETIME/wangke3/Desktop/main/data/GSM8k/train.jsonl', type='GSM8K')

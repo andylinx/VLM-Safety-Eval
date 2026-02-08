@@ -13,7 +13,7 @@ from transformers import AutoProcessor, Llama4ForConditionalGeneration
 
 
 # Constants
-DEFAULT_MODEL_PATH = "/data/zhengyue_zhao/workspace/nanxi/Models/llama-4-guard"
+DEFAULT_MODEL_PATH = os.getenv("LLAMA_GUARD_MODEL_PATH", "path/to/llama-4-guard")
 _S_CODE_RE = re.compile(r"\bS(\d{1,2})\b", re.IGNORECASE)
 
 

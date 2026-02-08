@@ -10,7 +10,7 @@ from pathlib import Path
 
 # Import from local models module
 from models import AzureOpenAIClient
-from config_utils import get_data_path
+from utils.config_utils import get_data_path
 
 # Initialize Azure OpenAI client
 client = AzureOpenAIClient()

@@ -7,13 +7,14 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env file from the same directory as this script
-_env_path = Path(__file__).parent / '.env'
+# Load .env file from the project root
+_project_root = Path(__file__).parent.parent.parent
+_env_path = _project_root / '.env'
 load_dotenv(_env_path)
 
 def get_data_base_root_path() -> str:
     """Get the data base root path from environment variable."""
-    return os.getenv('DATA_BASE_ROOT_PATH', '/home/xliu316/scratchcxiao13/nanxi/Dataset')
+    return os.getenv('DATA_BASE_ROOT_PATH', './data')
 
 def get_output_dir() -> str:
     """Get the output directory from environment variable."""

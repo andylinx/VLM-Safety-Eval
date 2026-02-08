@@ -4,7 +4,7 @@ from tqdm import tqdm
 import time
 import json
 import pandas as pd
-from mathvision_utils import timestamp, save_jsonl, load_jsonl, find_math_answer, is_equal, is_number
+from utils.mathvision_utils import timestamp, save_jsonl, load_jsonl, find_math_answer, is_equal, is_number
 import os
 
 def load_json(file_path):

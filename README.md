@@ -22,7 +22,7 @@ You can download the collection of datasets from Hugging Face:
 ```bash
 # Download from andyc03/VLM-Eval
 huggingface-cli download andyc03/VLM-Eval --local-dir ./data
-
+cd ./data
 # Prepare data by unzipping folders
 bash unzip_folders.sh
 ```
@@ -75,20 +75,23 @@ export temperature=1.0
 ### 5. Generate Responses
 
 ```bash
+# Set PYTHONPATH to include src
+export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+
 # MM-SafetyBench
-python get_response_MM.py --model_name "my-model" --vllm-url http://localhost:8000
+python src/evaluation/get_response_MM.py --model_name "my-model" --vllm-url http://localhost:8000
 
 # HallusionBench
-python get_response_Hallucination.py --model_name "my-model" --vllm-url http://localhost:8000
+python src/evaluation/get_response_Hallucination.py --model_name "my-model" --vllm-url http://localhost:8000
 
 # MMVP
-python get_response_MVP.py --model_name "my-model" --vllm-url http://localhost:8000
+python src/evaluation/get_response_MVP.py --model_name "my-model" --vllm-url http://localhost:8000
 
 # MIS
-python get_response_MIS.py --model_name "my-model" --vllm-url http://localhost:8000
+python src/evaluation/get_response_MIS.py --model_name "my-model" --vllm-url http://localhost:8000
 
 # MMLU-PRO
-python get_response_MMMU_Pro.py --model_name "my-model" --vllm-url http://localhost:8000
+python src/evaluation/get_response_MMMU_Pro.py --model_name "my-model" --vllm-url http://localhost:8000
 ```
 
 Common arguments:
@@ -102,17 +105,39 @@ Common arguments:
 
 ```bash
 # MM-SafetyBench (uses Llama Guard 4)
-python judge_MMSafety.py --input ./result/MM_Safety/MLLM_Result_my-model --model my-model
+python src/judging/judge_MMSafety.py --input ./result/MM_Safety/MLLM_Result_my-model --model my-model
 
 # MIS (uses Azure OpenAI GPT-4o)
-python judge_MIS.py --input ./result/MIS/my-model_mis_hard_responses.json
+python src/judging/judge_MIS.py --input ./result/MIS/my-model_mis_hard_responses.json
 
 # HallusionBench
-python judge_Hallucination.py --input ./result/Hallusion/my-model_HallusionBench_result.json
+python src/judging/judge_Hallucination.py --input ./result/Hallusion/my-model_HallusionBench_result.json
 
 # MMVP
-python judge_MVP.py --input ./result/MMVP/my-model_MMVP_result.json
+python src/judging/judge_MVP.py --input ./result/MMVP/my-model_MMVP_result.json
 ```
+
+## Slurm Evaluation
+
+For evaluating on a Slurm cluster, you can use the automated submission script which handles vLLM deployment and response generation.
+
+```bash
+sbatch scripts/vllm_slurm_eval.sh \
+    --model-path /path/to/your/model \
+    --dataset MM \
+    --model-name my-model \
+    --tp 1 \
+    --num-threads 8
+```
+
+Supported datasets for `--dataset`: `MM`, `MIS`, `Hallucination`, `MVP`, `MMMU_Pro`, `MathVision`.
+
+The script automates the following steps:
+1. Allocates GPU resources via Slurm.
+2. Finds an available port and starts the vLLM server.
+3. Polls the server until it is ready for requests.
+4. Executes the appropriate `get_response_<dataset>.py` script.
+5. Gracefully shuts down the vLLM server upon completion.
 
 ## Output
 
