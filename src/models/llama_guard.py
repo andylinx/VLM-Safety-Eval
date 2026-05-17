@@ -5,6 +5,7 @@ This module provides a unified interface for using Llama-4-Guard for safety asse
 including text classification, probability computation, and output parsing.
 """
 
+import os
 import re
 import torch
 import torch.nn.functional as F

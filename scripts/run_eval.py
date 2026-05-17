@@ -66,7 +66,7 @@ def main():
     
     # 1. Start vLLM server
     vllm_cmd = [
-        "python", "-m", "vllm.entrypoints.openai.api_server",
+        sys.executable, "-m", "vllm.entrypoints.openai.api_server",
         "--model", args.model_path,
         "--host", "0.0.0.0",
         "--port", str(port),
@@ -92,7 +92,7 @@ def main():
         env["PYTHONPATH"] = f"{src_path}:{env.get('PYTHONPATH', '')}"
         
         eval_cmd = [
-            "python", eval_script,
+            sys.executable, eval_script,
             "--model_name", args.model_name,
             "--vllm-url", vllm_url,
             "--max-workers", str(args.num_threads)

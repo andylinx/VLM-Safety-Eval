@@ -142,7 +142,7 @@ class VLLMClient:
             messages.append({"role": "assistant", "content": "<think>"})
         
         request_body = {
-            "model": "model",
+            "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature,

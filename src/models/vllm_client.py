@@ -71,12 +71,27 @@ class VLLMClient:
             Dictionary containing response, usage stats, and metadata
         """
         
-        # If no model specified, use the first available model
-        if model is None:
-            models = self.get_models()
-            if not models:
+        # Resolve model name to actual model ID on server
+        try:
+            available_models = self.get_models()
+            model_ids = [m["id"] for m in available_models]
+            if model is None:
+                if not available_models:
+                    raise RuntimeError("No models available")
+                model = model_ids[0]
+            elif model not in model_ids:
+                # Try matching by basename or partial path
+                matched = False
+                for mid in model_ids:
+                    if model in mid or mid.endswith("/" + model):
+                        model = mid
+                        matched = True
+                        break
+                if not matched and available_models:
+                    model = model_ids[0]
+        except Exception:
+            if model is None:
                 raise RuntimeError("No models available")
-            model = models[0]["id"]
         # Normalize image_paths to list
         if image_paths is None:
             image_paths = []
@@ -133,7 +148,7 @@ class VLLMClient:
             messages.append({"role": "assistant", "content": "<think>"})
         
         request_body = {
-            "model": "model",
+            "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature,
